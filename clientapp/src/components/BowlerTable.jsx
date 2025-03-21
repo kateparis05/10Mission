@@ -7,7 +7,7 @@ export default function BowlerTable() {
 
     useEffect(() => {
         // Fetch data from the API
-        fetch('http://localhost:5194/api/bowlers')  // Updated to use port 5194
+        fetch('http://localhost:5194/api/bowlers')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`API returned ${response.status}`);
@@ -18,7 +18,13 @@ export default function BowlerTable() {
                 console.log('Received data:', data);
                 // Extract the actual bowlers array from the response
                 const bowlersArray = data.$values || data;
-                setBowlers(bowlersArray);
+
+                // Filter to only include bowlers with Marlins or Sharks teams
+                const filteredBowlers = bowlersArray.filter(bowler =>
+                    bowler.team && (bowler.team.teamName === 'Marlins' || bowler.team.teamName === 'Sharks')
+                );
+
+                setBowlers(filteredBowlers);
                 setLoading(false);
             })
             .catch(err => {
@@ -56,14 +62,14 @@ export default function BowlerTable() {
                 </tr>
             ) : (
                 bowlers.map(bowler => (
-                    <tr key={bowler.bowlerID}>
-                        <td>{`${bowler.bowlerFirstName} ${bowler.bowlerMiddleInit || ''} ${bowler.bowlerLastName}`}</td>
+                    <tr key={bowler.bowlerId || bowler.bowlerID}>
+                        <td>{`${bowler.bowlerFirstName || ''} ${bowler.bowlerMiddleInit || ''} ${bowler.bowlerLastName || ''}`}</td>
                         <td>{bowler.team?.teamName || 'No Team'}</td>
-                        <td>{bowler.bowlerAddress}</td>
-                        <td>{bowler.bowlerCity}</td>
-                        <td>{bowler.bowlerState}</td>
-                        <td>{bowler.bowlerZip}</td>
-                        <td>{bowler.bowlerPhoneNumber}</td>
+                        <td>{bowler.bowlerAddress || ''}</td>
+                        <td>{bowler.bowlerCity || ''}</td>
+                        <td>{bowler.bowlerState || ''}</td>
+                        <td>{bowler.bowlerZip || ''}</td>
+                        <td>{bowler.bowlerPhoneNumber || ''}</td>
                     </tr>
                 ))
             )}
