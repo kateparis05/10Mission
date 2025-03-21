@@ -3,20 +3,43 @@ import React, { useState, useEffect } from 'react';
 export default function BowlerTable() {
     const [bowlers, setBowlers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         // Fetch data from the API
-        fetch('https://localhost:7095/api/bowlers')  // Adjust port if needed
-            .then(response => response.json())
+        fetch('http://localhost:5194/api/bowlers')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
-                setBowlers(data);
+                console.log('Received data:', data);
+                // Extract the actual bowlers array from the response
+                const bowlersArray = data.$values || data;
+
+                // Filter to only include bowlers with Marlins or Sharks teams
+                const filteredBowlers = bowlersArray.filter(bowler =>
+                    bowler.team && (bowler.team.teamName === 'Marlins' || bowler.team.teamName === 'Sharks')
+                );
+
+                setBowlers(filteredBowlers);
                 setLoading(false);
             })
-            .catch(error => console.error('Error fetching bowler data:', error));
+            .catch(err => {
+                console.error('Error fetching bowler data:', err);
+                setError(err.message);
+                setLoading(false);
+            });
     }, []);
 
     if (loading) {
         return <p>Loading bowler data...</p>;
+    }
+
+    if (error) {
+        return <p>Error loading data: {error}</p>;
     }
 
     return (
@@ -33,17 +56,23 @@ export default function BowlerTable() {
             </tr>
             </thead>
             <tbody>
-            {bowlers.map(bowler => (
-                <tr key={bowler.bowlerID}>
-                    <td>{`${bowler.bowlerFirstName} ${bowler.bowlerMiddleInit || ''} ${bowler.bowlerLastName}`}</td>
-                    <td>{bowler.team.teamName}</td>
-                    <td>{bowler.bowlerAddress}</td>
-                    <td>{bowler.bowlerCity}</td>
-                    <td>{bowler.bowlerState}</td>
-                    <td>{bowler.bowlerZip}</td>
-                    <td>{bowler.bowlerPhoneNumber}</td>
+            {bowlers.length === 0 ? (
+                <tr>
+                    <td colSpan="7">No bowlers found</td>
                 </tr>
-            ))}
+            ) : (
+                bowlers.map(bowler => (
+                    <tr key={bowler.bowlerId || bowler.bowlerID}>
+                        <td>{`${bowler.bowlerFirstName || ''} ${bowler.bowlerMiddleInit || ''} ${bowler.bowlerLastName || ''}`}</td>
+                        <td>{bowler.team?.teamName || 'No Team'}</td>
+                        <td>{bowler.bowlerAddress || ''}</td>
+                        <td>{bowler.bowlerCity || ''}</td>
+                        <td>{bowler.bowlerState || ''}</td>
+                        <td>{bowler.bowlerZip || ''}</td>
+                        <td>{bowler.bowlerPhoneNumber || ''}</td>
+                    </tr>
+                ))
+            )}
             </tbody>
         </table>
     );

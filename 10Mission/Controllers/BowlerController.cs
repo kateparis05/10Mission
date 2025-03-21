@@ -1,5 +1,5 @@
-using _10Mission.Data;
 using Microsoft.AspNetCore.Mvc;
+using _10Mission.Data;
 
 namespace _10Mission.Controllers
 {
@@ -7,7 +7,7 @@ namespace _10Mission.Controllers
     [Route("api/[controller]")]
     public class BowlersController : ControllerBase
     {
-        private IBowlingRepository _repository;
+        private readonly IBowlingRepository _repository;
         
         public BowlersController(IBowlingRepository repository)
         {
