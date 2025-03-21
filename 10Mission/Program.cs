@@ -5,7 +5,12 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    // Make JSON more readable during development
+    options.JsonSerializerOptions.WriteIndented = true;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -21,7 +26,7 @@ builder.Services.AddCors(options =>
 });
 
 // Add database context
-builder.Services.AddDbContext<EFBowlingContext>(options =>
+builder.Services.AddDbContext<EfBowlingContext>(options =>
 {
     options.UseSqlite(builder.Configuration.GetConnectionString("BowlingConnection"));
 });
